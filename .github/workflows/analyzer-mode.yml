@@ -36,7 +36,7 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
 
       - name: Setup FinFocus Analyzer Mode
-        uses: rshade/finfocus-action@main
+        uses: rshade/finfocus-action@v1
         with:
           analyzer-mode: true
           install-plugins: aws-public

@@ -46,9 +46,9 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
 
       - name: Run FinFocus Cost Estimation
-        uses: rshade/finfocus-action@main
+        uses: rshade/finfocus-action@v1
         with:
           pulumi-plan-json: plan.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           install-plugins: aws-public
-          post-comment: true
+          post-comment: "true"
