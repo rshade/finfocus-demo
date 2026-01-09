@@ -21,10 +21,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      - uses: pulumi/actions@v6
-        with:
-          command: login
-          cloud-url: file://~
+      - name: Install Pulumi CLI
+        uses: pulumi/actions@v6
+
+      - name: Login to Pulumi local backend
+        run: pulumi login --local
 
       - name: Install AWS Pulumi plugin
         run: pulumi plugin install resource aws
@@ -35,7 +36,12 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
 
       - name: Generate preview JSON
-        run: pulumi preview --json --non-interactive > plan.json 2>&1 || true
+        run: |
+          pulumi preview --json --non-interactive > plan.json 2> preview-errors.txt || true
+          echo "=== Preview Errors (if any) ==="
+          cat preview-errors.txt || true
+          echo "=== Plan JSON (first 50 lines) ==="
+          head -50 plan.json || true
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
 
