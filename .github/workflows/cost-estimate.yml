@@ -1,0 +1,48 @@
+name: Cost Estimate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write  # Required for OIDC
+
+jobs:
+  cost-estimate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - uses: pulumi/actions@v6
+        with:
+          command: login
+          cloud-url: file://~
+
+      - name: Install AWS Pulumi plugin
+        run: pulumi plugin install resource aws
+
+      - name: Initialize stack
+        run: pulumi stack init dev --non-interactive || pulumi stack select dev
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ""
+
+      - name: Generate preview JSON
+        run: pulumi preview --json --non-interactive > plan.json 2>&1 || true
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ""
+
+      - name: Run FinFocus Cost Estimation
+        uses: rshade/finfocus-action@main
+        with:
+          pulumi-plan-json: plan.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          install-plugins: aws-public
+          post-comment: true

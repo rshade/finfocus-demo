@@ -1,0 +1,80 @@
+name: finfocus-demo
+runtime: yaml
+description: Demo project for finfocus-action cost estimation
+
+config:
+  aws:region: us-east-1
+
+variables:
+  ami:
+    fn::invoke:
+      function: aws:ec2/getAmi:getAmi
+      arguments:
+        mostRecent: true
+        owners:
+          - amazon
+        filters:
+          - name: name
+            values:
+              - amzn2-ami-hvm-*-x86_64-gp2
+
+resources:
+  demo-vpc:
+    type: aws:ec2:Vpc
+    properties:
+      cidrBlock: '10.0.0.0/16'
+      enableDnsHostnames: true
+      tags:
+        Name: finfocus-demo-vpc
+
+  demo-subnet:
+    type: aws:ec2:Subnet
+    properties:
+      vpcId: ${demo-vpc.id}
+      cidrBlock: '10.0.1.0/24'
+      availabilityZone: us-east-1a
+      tags:
+        Name: finfocus-demo-subnet
+
+  demo-sg:
+    type: aws:ec2:SecurityGroup
+    properties:
+      vpcId: ${demo-vpc.id}
+      ingress:
+        - protocol: tcp
+          fromPort: 80
+          toPort: 80
+          cidrBlocks:
+            - '0.0.0.0/0'
+      egress:
+        - protocol: '-1'
+          fromPort: 0
+          toPort: 0
+          cidrBlocks:
+            - '0.0.0.0/0'
+      tags:
+        Name: finfocus-demo-sg
+
+  demo-volume:
+    type: aws:ebs:Volume
+    properties:
+      availabilityZone: us-east-1a
+      size: 20
+      type: gp3
+      tags:
+        Name: finfocus-demo-volume
+
+  demo-instance:
+    type: aws:ec2:Instance
+    properties:
+      instanceType: t3.micro
+      ami: ${ami.id}
+      subnetId: ${demo-subnet.id}
+      vpcSecurityGroupIds:
+        - ${demo-sg.id}
+      tags:
+        Name: finfocus-demo-instance
+
+outputs:
+  instanceId: ${demo-instance.id}
+  vpcId: ${demo-vpc.id}

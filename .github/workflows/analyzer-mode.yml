@@ -1,0 +1,46 @@
+name: Analyzer Mode Demo
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write  # Required for OIDC
+
+jobs:
+  analyzer-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - uses: pulumi/actions@v6
+        with:
+          command: login
+          cloud-url: file://~
+
+      - name: Install AWS Pulumi plugin
+        run: pulumi plugin install resource aws
+
+      - name: Initialize stack
+        run: pulumi stack init dev --non-interactive || pulumi stack select dev
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ""
+
+      - name: Setup FinFocus Analyzer Mode
+        uses: rshade/finfocus-action@main
+        with:
+          analyzer-mode: true
+          install-plugins: aws-public
+
+      - name: Run Pulumi Preview with Cost Analysis
+        run: pulumi preview --non-interactive
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ""
