@@ -75,6 +75,32 @@ resources:
       tags:
         Name: finfocus-demo-instance
 
+  # T2 instance to demonstrate t3 upgrade recommendation
+  legacy-instance:
+    type: aws:ec2:Instance
+    properties:
+      instanceType: t2.medium
+      ami: ${ami.id}
+      subnetId: ${demo-subnet.id}
+      vpcSecurityGroupIds:
+        - ${demo-sg.id}
+      tags:
+        Name: finfocus-legacy-instance
+
+  # Larger instance to show cost difference
+  demo-instance-large:
+    type: aws:ec2:Instance
+    properties:
+      instanceType: t3.large
+      ami: ${ami.id}
+      subnetId: ${demo-subnet.id}
+      vpcSecurityGroupIds:
+        - ${demo-sg.id}
+      tags:
+        Name: finfocus-demo-instance-large
+
 outputs:
   instanceId: ${demo-instance.id}
+  legacyInstanceId: ${legacy-instance.id}
+  largeInstanceId: ${demo-instance-large.id}
   vpcId: ${demo-vpc.id}
