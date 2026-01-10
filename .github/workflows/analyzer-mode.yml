@@ -42,6 +42,10 @@ jobs:
           install-plugins: aws-public
 
       - name: Run Pulumi Preview with Cost Analysis
-        run: pulumi preview --non-interactive
+        uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: dev
+          comment-on-pr: true
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
