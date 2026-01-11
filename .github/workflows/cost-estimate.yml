@@ -38,7 +38,7 @@ jobs:
         run: pulumi login --local
 
       - name: Install AWS Pulumi plugin
-        run: pulumi plugin install resource aws --verbose
+        run: pulumi plugin install resource aws -v 3
 
       - name: Initialize stack
         run: pulumi stack init dev --non-interactive || pulumi stack select dev
