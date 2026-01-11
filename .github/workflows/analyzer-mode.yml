@@ -36,9 +36,10 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
 
       - name: Setup FinFocus Analyzer Mode
+        id: finfocus
         uses: rshade/finfocus-action@v1
         with:
-          analyzer-mode: true
+          analyzer-mode: "true"
           install-plugins: aws-public
 
       - name: Run Pulumi Preview with Cost Analysis
@@ -47,5 +48,7 @@ jobs:
           command: preview
           stack-name: dev
           comment-on-pr: true
+          # Explicitly pass the policy pack path for reliable integration
+          policyPacks: ${{ steps.finfocus.outputs.policy-pack-path }}
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
