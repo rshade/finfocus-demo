@@ -102,3 +102,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           install-plugins: aws-public
           post-comment: "true"
+          include-recommendations: true
