@@ -103,3 +103,6 @@ jobs:
           install-plugins: aws-public
           post-comment: "true"
           include-recommendations: true
+          budget-amount: 10
+          budget-currency: USD
+          budget-period: monthly
