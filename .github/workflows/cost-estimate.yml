@@ -9,6 +9,13 @@ permissions:
   pull-requests: write
   id-token: write  # Required for OIDC
 
+env:
+  # Enable debug logging for all actions
+  ACTIONS_STEP_DEBUG: true
+  ACTIONS_RUNNER_DEBUG: true
+  # Disable tool caching
+  ACTIONS_CACHE_DISABLED: true
+
 jobs:
   cost-estimate:
     runs-on: ubuntu-latest
@@ -21,13 +28,17 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      - uses: pulumi/actions@v6
+      - name: Install Pulumi CLI
+        uses: pulumi/actions@v6
         with:
-          command: login
-          cloud-url: file://~
+          # Disable Pulumi's internal caching
+          pulumi-version: latest
+
+      - name: Login to Pulumi local backend
+        run: pulumi login --local
 
       - name: Install AWS Pulumi plugin
-        run: pulumi plugin install resource aws
+        run: pulumi plugin install resource aws -v 3
 
       - name: Initialize stack
         run: pulumi stack init dev --non-interactive || pulumi stack select dev
@@ -35,14 +46,67 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
 
       - name: Generate preview JSON
-        run: pulumi preview --json --non-interactive > plan.json 2>&1 || true
+        run: |
+          echo "=== Starting Pulumi Preview ==="
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo ""
+          echo "Pulumi version:"
+          pulumi version
+          echo ""
+          echo "Pulumi stack:"
+          pulumi stack --show-name
+          echo ""
+          echo "=== Running pulumi preview --json ==="
+          # Use --logtostderr to send logs to stderr, stdout gets clean JSON
+          # Add --debug for verbose Pulumi output
+          pulumi preview --json --non-interactive --logtostderr --debug > plan.json
+          PREVIEW_EXIT=$?
+          
+          echo ""
+          echo "=== Preview completed with exit code: $PREVIEW_EXIT ==="
+          echo "Plan file size: $(wc -c < plan.json) bytes"
+          echo "Plan file lines: $(wc -l < plan.json) lines"
+          echo ""
+          
+          # Show first part of plan file for debugging
+          echo "=== Plan file content (first 1000 chars) ==="
+          head -c 1000 plan.json
+          echo ""
+          echo ""
+          
+          # Validate JSON
+          echo "=== Validating JSON ==="
+          if python3 -c "import json; json.load(open('plan.json'))" 2>/dev/null; then
+            echo "✅ Plan JSON is valid"
+          else
+            echo "❌ Plan JSON is NOT valid"
+            echo "Full file contents:"
+            cat plan.json
+            exit 1
+          fi
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
+          PULUMI_DEBUG_COMMANDS: true
 
       - name: Run FinFocus Cost Estimation
-        uses: rshade/finfocus-action@main
+        uses: rshade/finfocus-action@v1.2.2
+        env:
+          # Enable Node.js debug output
+          NODE_DEBUG: '*'
+          # Enable pulumicost debug mode
+          PULUMICOST_DEBUG: true
         with:
           pulumi-plan-json: plan.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           install-plugins: aws-public
-          post-comment: true
+          post-comment: "true"
+          include-recommendations: true
+          budget-amount: 105
+          budget-currency: USD
+          budget-period: monthly
+          # Budget health suite settings (finfocus v0.2.5+)
+          budget-alert-threshold: 80
+          fail-on-budget-health: 50
+          show-budget-forecast: true
