@@ -91,7 +91,7 @@ jobs:
           PULUMI_DEBUG_COMMANDS: true
 
       - name: Run FinFocus Cost Estimation
-        uses: rshade/finfocus-action@v1
+        uses: rshade/finfocus-action@v1.2.2
         env:
           # Enable Node.js debug output
           NODE_DEBUG: '*'
@@ -103,6 +103,10 @@ jobs:
           install-plugins: aws-public
           post-comment: "true"
           include-recommendations: true
-          budget-amount: 10
+          budget-amount: 105
           budget-currency: USD
           budget-period: monthly
+          # Budget health suite settings (finfocus v0.2.5+)
+          budget-alert-threshold: 80
+          fail-on-budget-health: 50
+          show-budget-forecast: true
