@@ -37,7 +37,7 @@ jobs:
 
       - name: Setup FinFocus Analyzer Mode
         id: finfocus
-        uses: rshade/finfocus-action@v1
+        uses: rshade/finfocus-action@v2
         with:
           analyzer-mode: "true"
           install-plugins: aws-public

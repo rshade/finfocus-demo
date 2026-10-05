@@ -7,8 +7,8 @@ This repository demonstrates the `finfocus-action` GitHub Action for Pulumi cost
 ## Related Repositories
 
 - **finfocus-action**: `../finfocus-action` - The GitHub Action itself
-- **pulumicost-core**: `../pulumicost-core` - The CLI tool that performs cost analysis  
-- **pulumicost-plugin-aws-public**: `../pulumicost-plugin-aws-public` - AWS pricing plugin
+- **finfocus**: `../finfocus` - The CLI tool that performs cost analysis
+- **finfocus-plugin-aws-public**: `../finfocus-plugin-aws-public` - AWS pricing plugin
 
 ## Workflow Overview
 
@@ -19,7 +19,7 @@ The cost estimation workflow (`cost-estimate.yml`) does the following:
 3. Install Pulumi CLI
 4. Run `pulumi preview --json` to generate plan
 5. Run `finfocus-action` which:
-   - Downloads and installs `pulumicost` CLI
+   - Downloads and installs `finfocus` CLI
    - Installs plugins (e.g., `aws-public`)
    - Runs cost analysis on the plan JSON
    - Posts a comment to the PR
@@ -37,15 +37,16 @@ The cost estimation workflow (`cost-estimate.yml`) does the following:
    - Verify `Pulumi.yaml` is valid
    - Check that required Pulumi plugins are available
 
-2. **pulumicost Installation Fails**
+2. **finfocus Installation Fails**
    - Check GitHub API rate limits
-   - Verify the release assets exist at `rshade/pulumicost-core/releases`
-   - Expected asset format: `pulumicost-core-v{version}-{platform}-{arch}.tar.gz`
+   - Verify the release assets exist at `rshade/finfocus/releases`
+   - Expected asset format: `finfocus-v{version}-{platform}-{arch}.tar.gz`
+   - `finfocus-version: latest` resolves to the newest stable `v*` CLI release
 
 3. **Plugin Installation Fails**
-   - Check plugin exists in pulumicost-core's registry.json
+   - Check the plugin is listed by `finfocus plugin list --available`
    - Verify plugin releases exist at the plugin's repo
-   - For `aws-public`, assets include region suffix: `pulumicost-plugin-aws-public_{version}_Linux_x86_64_us-east-1.tar.gz`
+   - For `aws-public`, assets include region suffix: `finfocus-plugin-aws-public_{version}_Linux_x86_64_us-east-1.tar.gz`
 
 4. **Cost Analysis Fails**
    - Ensure `plan.json` contains valid JSON (not error messages)
@@ -71,25 +72,36 @@ The cost estimation workflow (`cost-estimate.yml`) does the following:
 After making changes to `finfocus-action`:
 
 1. Rebuild the dist: `cd ../finfocus-action && npm run build`
-2. The v1 branch must have the `dist/` folder (main branch does not)
-3. Push changes to the v1 branch for workflows to pick them up
+2. `dist/` is committed on `main`; release-please cuts releases and moves the
+   `v2` / `v2.x` / `v2.x.y` tags
+3. `cost-estimate.yml` pins an exact release (`@v2.0.0`); `analyzer-mode.yml`
+   tracks the major tag (`@v2`). Bump the pin after a new release
+
+### v2 Breaking Changes
+
+v2.0.0 removed the budget health and scoped-budget inputs
+(`budget-alert-threshold`, `fail-on-budget-health`, `show-budget-forecast`,
+`budget-scopes`, `fail-on-budget-scope-breach`) and their outputs. Use
+`budget-amount` / `budget-currency` / `budget-period` / `budget-alerts` instead.
+Budget breach enforcement (`--exit-on-threshold`, exit code 10) only runs when
+`fail-on-cost-increase` is set.
 
 ### Testing Locally
 
-You can manually test pulumicost:
+You can manually test finfocus:
 
 ```bash
-# Install pulumicost
-curl -sL https://github.com/rshade/pulumicost-core/releases/latest/download/pulumicost-core-v{version}-linux-amd64.tar.gz | tar xz
+# Install finfocus
+curl -sL https://github.com/rshade/finfocus/releases/download/v{version}/finfocus-v{version}-linux-amd64.tar.gz | tar xz
 
 # Install plugin
-./pulumicost plugin install aws-public
+./finfocus plugin install aws-public
 
 # Generate Pulumi plan
 pulumi preview --json > plan.json
 
 # Run cost analysis
-./pulumicost cost projected --pulumi-json plan.json --output json
+./finfocus cost projected --pulumi-json plan.json --output json
 ```
 
 ## Files

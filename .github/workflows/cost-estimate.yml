@@ -91,22 +91,22 @@ jobs:
           PULUMI_DEBUG_COMMANDS: true
 
       - name: Run FinFocus Cost Estimation
-        uses: rshade/finfocus-action@v1.2.2
+        uses: rshade/finfocus-action@v2.0.0
         env:
           # Enable Node.js debug output
           NODE_DEBUG: '*'
-          # Enable pulumicost debug mode
-          PULUMICOST_DEBUG: true
         with:
           pulumi-plan-json: plan.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           install-plugins: aws-public
           post-comment: "true"
+          debug: "true"
           include-recommendations: true
           budget-amount: 105
           budget-currency: USD
           budget-period: monthly
-          # Budget health suite settings (finfocus v0.2.5+)
-          budget-alert-threshold: 80
-          fail-on-budget-health: 50
-          show-budget-forecast: true
+          budget-alerts: '[{"threshold": 80, "type": "actual"}, {"threshold": 100, "type": "forecasted"}]'
+          # What-if: price legacy-instance (t2.large) as a t3.large
+          estimate-spec: >-
+            {"provider": "aws", "resource_type": "aws:ec2/instance:Instance",
+            "properties": {"instanceType": "t3.large"}, "region": "us-east-1"}

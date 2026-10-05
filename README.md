@@ -23,6 +23,18 @@ Generates a Pulumi preview JSON file and posts a formatted cost summary as a PR 
 
 Integrates cost estimation directly into the Pulumi preview output as policy diagnostics.
 
+Both workflows use finfocus-action **v2**. The standard workflow tracks spend
+against a $105/month budget with `budget-alerts` at 80% (actual) and 100%
+(forecasted). v2 removed the budget health inputs (`budget-alert-threshold`,
+`fail-on-budget-health`, `show-budget-forecast`); see the
+[v2.0.0 release notes](https://github.com/rshade/finfocus-action/releases/tag/v2.0.0).
+
+The standard workflow also sets `estimate-spec` to run a single-resource
+what-if (`finfocus cost estimate`) pricing an EC2 instance as a `t3.large`.
+The PR comment gains a "What-If Cost Estimate" section with the baseline vs
+modified monthly cost, showing what migrating `legacy-instance` off `t2` would
+cost before changing `Pulumi.yaml`.
+
 ## Setup
 
 ### Step 1: Create AWS OIDC Identity Provider
