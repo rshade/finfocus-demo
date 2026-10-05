@@ -114,6 +114,93 @@ Set `ACTIONS_STEP_DEBUG` secret to `true` for verbose logging.
 - Only runs `pulumi preview` — no resources are created
 - `aws-public` plugin uses public AWS pricing data
 
+## Testing Tag Enrichment
+
+The `scripts/verify-tag-enrichment.sh` script runs a comprehensive E2E
+verification that finfocus correctly enriches actual cost requests with
+`provider`, `resource_type`, `sku`, and `region` metadata.
+
+### Prerequisites
+
+- **finfocus binary** built (`make build` in the finfocus repo)
+- **aws-public plugin** installed (`finfocus plugin install aws-public`)
+- **recorder plugin** installed (`make install-recorder` in the finfocus repo)
+- **AWS credentials** configured (for `pulumi stack export`)
+- **pulumi CLI** on PATH
+- **jq** installed
+
+### Running
+
+```bash
+cd finfocus-demo
+./scripts/verify-tag-enrichment.sh
+```
+
+Override the finfocus binary path if needed:
+
+```bash
+FINFOCUS_BIN=/path/to/finfocus ./scripts/verify-tag-enrichment.sh
+```
+
+If the stack uses an encrypted config passphrase:
+
+```bash
+export PULUMI_CONFIG_PASSPHRASE="your-passphrase"
+./scripts/verify-tag-enrichment.sh
+```
+
+### What It Tests (110 assertions)
+
+The script runs 11 test sections organized into four parts:
+
+**Part A -- Output-level verification via aws-public (real pricing):**
+
+| Test | What it checks |
+|------|----------------|
+| 1 | `resourceType` populated for every resource in JSON output |
+| 2 | `adapter` field identifies pricing source (aws-public vs estimate) |
+| 3 | `resourceType` values use Pulumi type token format |
+| 4 | EC2/EBS resources return non-zero costs from real pricing |
+| 5 | Consistency: all aws: prefix, USD currency, valid date ranges |
+
+**Part B -- Proto-level verification via recorder (request inspection):**
+
+| Test | What it checks |
+|------|----------------|
+| 6 | Enriched tags in gRPC request: provider, resource_type, sku, region |
+| 7 | User-defined tags (e.g. Name) preserved alongside enriched tags |
+| 8 | SKU values match expected instance types from Pulumi.yaml |
+
+**Part C -- Data quality checks on aws-public output:**
+
+| Test | What it checks |
+|------|----------------|
+| 9 | Breakdown field contains pricing details for priced resources |
+| 10 | Cost period sanity: dailyCosts length, date ordering, costPeriod |
+
+**Part D -- Projected cost (informational):**
+
+| Test | What it checks |
+|------|----------------|
+| 11 | Projected cost output (expected empty when no pending changes) |
+
+### Expected Output
+
+```text
+ALL TESTS PASSED: 110/110
+```
+
+The script exits 0 on success, non-zero with the failure count on failure.
+Test 11 (projected cost) is informational -- it reports INFO rather than
+FAIL when the stack has no pending changes.
+
+### Implementation Details
+
+- The script clears `~/.finfocus/cache/cache.db` before the recorder pass
+  to ensure fresh plugin calls
+- Temporary output is written to `test_output/` and cleaned up on exit
+- The recorder pass uses `--adapter recorder` with mock responses enabled
+
 ## Links
 
 - [finfocus-action](https://github.com/rshade/finfocus-action)
