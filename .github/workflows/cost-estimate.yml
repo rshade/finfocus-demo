@@ -103,9 +103,6 @@ jobs:
       - name: Run FinFocus Cost Estimation (release)
         if: matrix.channel == 'release'
         uses: rshade/finfocus-action@v2.0.0
-        env:
-          # Enable Node.js debug output
-          NODE_DEBUG: '*'
         with:
           pulumi-plan-json: plan.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
