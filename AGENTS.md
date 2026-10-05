@@ -84,7 +84,16 @@ v2.0.0 removed the budget health and scoped-budget inputs
 `budget-scopes`, `fail-on-budget-scope-breach`) and their outputs. Use
 `budget-amount` / `budget-currency` / `budget-period` / `budget-alerts` instead.
 Budget breach enforcement (`--exit-on-threshold`, exit code 10) only runs when
-`fail-on-cost-increase` is set.
+`fail-on-cost-increase` is set, and as of v2.0.0 it never fires: the action
+writes the budget to `~/.finfocus/config.yaml`, but finfocus v0.4.x reads
+`config.hujson` (finfocus-action#109, #110). The budget shown in the PR comment
+is calculated by the action itself, not by finfocus.
+
+### Known v2.0.0 Issues Visible in the Demo
+
+- Carbon totals are 1000x too high: gCO2e summed as kg (finfocus-action#111)
+- What-if section shows a $0.00 baseline in single-resource mode
+  (finfocus-action#112)
 
 ### Testing Locally
 
