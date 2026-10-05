@@ -30,10 +30,19 @@ against a $105/month budget with `budget-alerts` at 80% (actual) and 100%
 [v2.0.0 release notes](https://github.com/rshade/finfocus-action/releases/tag/v2.0.0).
 
 The standard workflow also sets `estimate-spec` to run a single-resource
-what-if (`finfocus cost estimate`) pricing an EC2 instance as a `t3.large`.
-The PR comment gains a "What-If Cost Estimate" section with the baseline vs
-modified monthly cost, showing what migrating `legacy-instance` off `t2` would
-cost before changing `Pulumi.yaml`.
+what-if (`finfocus cost estimate`) that prices a standalone `t3.large` EC2
+instance. Single-resource mode does not compare against the plan, so the
+"What-If Cost Estimate" section shows a $0.00 baseline
+([finfocus-action#112](https://github.com/rshade/finfocus-action/issues/112)).
+For the `t2.large` to `t3.large` savings on `legacy-instance`, see the
+recommendations section of the same comment.
+
+The budget section is informational: the job does not fail when the budget is
+exceeded
+([finfocus-action#109](https://github.com/rshade/finfocus-action/issues/109),
+[#110](https://github.com/rshade/finfocus-action/issues/110)). The
+sustainability totals are currently 1000x too high
+([finfocus-action#111](https://github.com/rshade/finfocus-action/issues/111)).
 
 ## Setup
 

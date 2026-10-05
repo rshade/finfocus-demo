@@ -106,7 +106,7 @@ jobs:
           budget-currency: USD
           budget-period: monthly
           budget-alerts: '[{"threshold": 80, "type": "actual"}, {"threshold": 100, "type": "forecasted"}]'
-          # What-if: price legacy-instance (t2.large) as a t3.large
+          # What-if: price a standalone t3.large (no baseline in single-resource mode)
           estimate-spec: >-
             {"provider": "aws", "resource_type": "aws:ec2/instance:Instance",
             "properties": {"instanceType": "t3.large"}, "region": "us-east-1"}
