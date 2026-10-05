@@ -79,7 +79,7 @@ resources:
   legacy-instance:
     type: aws:ec2:Instance
     properties:
-      instanceType: t2.medium
+      instanceType: t2.large
       ami: ${ami.id}
       subnetId: ${demo-subnet.id}
       vpcSecurityGroupIds:
