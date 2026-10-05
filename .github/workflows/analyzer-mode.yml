@@ -3,6 +3,10 @@ name: Analyzer Mode Demo
 on:
   pull_request:
     branches: [main]
+  schedule:
+    # Weekly health check: catches an expired AWS role, a deleted secret, or a broken release
+    - cron: '0 13 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,7 +15,14 @@ permissions:
 
 jobs:
   analyzer-preview:
+    name: analyzer-preview (${{ matrix.channel }})
     runs-on: ubuntu-latest
+    # action-main runs unreleased finfocus-action code as an early warning; it may fail without failing the run
+    continue-on-error: ${{ matrix.channel == 'action-main' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [release, action-main]
     steps:
       - uses: actions/checkout@v4
 
@@ -21,10 +32,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
-      - uses: pulumi/actions@v6
-        with:
-          command: login
-          cloud-url: file://~
+      - name: Install Pulumi CLI
+        uses: pulumi/actions@v6
+
+      - name: Login to Pulumi local backend
+        run: pulumi login --local
 
       - name: Install AWS Pulumi plugin
         run: pulumi plugin install resource aws
@@ -34,13 +46,30 @@ jobs:
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
 
-      - name: Setup FinFocus Analyzer Mode
+      - name: Setup FinFocus Analyzer Mode (release)
+        id: finfocus-release
+        if: matrix.channel == 'release'
+        uses: rshade/finfocus-action@v2
+        with:
+          analyzer-mode: "true"
+          install-plugins: aws-public
+
+      - name: Setup FinFocus Analyzer Mode (finfocus-action@main, early warning)
+        id: finfocus-main
+        if: matrix.channel == 'action-main'
         uses: rshade/finfocus-action@main
         with:
-          analyzer-mode: true
+          analyzer-mode: "true"
           install-plugins: aws-public
 
       - name: Run Pulumi Preview with Cost Analysis
-        run: pulumi preview --non-interactive
+        uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: dev
+          # Only the release job comments, and only on pull requests
+          comment-on-pr: ${{ github.event_name == 'pull_request' && matrix.channel == 'release' }}
+          # Explicitly pass the policy pack path for reliable integration
+          policyPacks: ${{ steps.finfocus-release.outputs.policy-pack-path || steps.finfocus-main.outputs.policy-pack-path }}
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
