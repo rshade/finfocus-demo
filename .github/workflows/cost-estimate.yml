@@ -102,7 +102,7 @@ jobs:
 
       - name: Run FinFocus Cost Estimation (release)
         if: matrix.channel == 'release'
-        uses: rshade/finfocus-action@v2.0.0
+        uses: rshade/finfocus-action@v2.1.0
         with:
           pulumi-plan-json: plan.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
