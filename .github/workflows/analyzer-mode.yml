@@ -32,8 +32,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
+      # Pulumi 3.270.0 removed the pulumi-analyzer-policy-<runtime> fallback that analyzer mode relies on
+      # (rshade/finfocus#1895). Remove this pin when finfocus ships a pulumi-language-finfocus plugin.
       - name: Install Pulumi CLI
         uses: pulumi/actions@v6
+        with:
+          pulumi-version: 3.268.0
 
       - name: Login to Pulumi local backend
         run: pulumi login --local
@@ -69,6 +73,7 @@ jobs:
         with:
           command: preview
           stack-name: dev
+          pulumi-version: 3.268.0
           # Only the release job comments, and only on pull requests
           comment-on-pr: ${{ github.event_name == 'pull_request' && matrix.channel == 'release' }}
           # Explicitly pass the policy pack path for reliable integration
