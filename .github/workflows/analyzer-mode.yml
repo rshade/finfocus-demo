@@ -34,6 +34,8 @@ jobs:
 
       - name: Install Pulumi CLI
         uses: pulumi/actions@v6
+        with:
+          pulumi-version: ${{ matrix.channel == 'release' && '3.268.0' || 'latest' }}
 
       - name: Login to Pulumi local backend
         run: pulumi login --local
@@ -54,6 +56,7 @@ jobs:
         uses: rshade/finfocus-action@v2
         with:
           analyzer-mode: "true"
+          finfocus-version: ${{ matrix.channel == 'release' && 'latest' || '0.5.0' }}
           install-plugins: aws-public
 
       - name: Setup FinFocus Analyzer Mode (finfocus-action@main, early warning)
@@ -62,12 +65,14 @@ jobs:
         uses: rshade/finfocus-action@main
         with:
           analyzer-mode: "true"
+          finfocus-version: ${{ matrix.channel == 'release' && 'latest' || '0.5.0' }}
           install-plugins: aws-public
 
       - name: Run Pulumi Preview with Cost Analysis
         uses: pulumi/actions@v6
         with:
           command: preview
+          pulumi-version: ${{ matrix.channel == 'release' && '3.268.0' || 'latest' }}
           stack-name: dev
           # Only the release job comments, and only on pull requests
           comment-on-pr: ${{ github.event_name == 'pull_request' && matrix.channel == 'release' }}
