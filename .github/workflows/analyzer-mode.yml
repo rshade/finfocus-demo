@@ -37,7 +37,7 @@ jobs:
       - name: Install Pulumi CLI
         uses: pulumi/actions@v7
         with:
-          pulumi-version: 3.268.0
+          pulumi-version: 3.272.0
 
       - name: Login to Pulumi local backend
         run: pulumi login --local
@@ -73,7 +73,7 @@ jobs:
         with:
           command: preview
           stack-name: dev
-          pulumi-version: 3.268.0
+          pulumi-version: 3.272.0
           # Only the release job comments, and only on pull requests
           comment-on-pr: ${{ github.event_name == 'pull_request' && matrix.channel == 'release' }}
           # Explicitly pass the policy pack path for reliable integration
