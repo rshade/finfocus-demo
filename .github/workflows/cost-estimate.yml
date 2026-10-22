@@ -48,7 +48,9 @@ jobs:
         run: pulumi login --local
 
       - name: Install AWS Pulumi plugin
-        run: pulumi plugin install resource aws -v 3
+        run: pulumi plugin install resource aws 7.51.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Initialize stack
         run: pulumi stack init dev --non-interactive || pulumi stack select dev
