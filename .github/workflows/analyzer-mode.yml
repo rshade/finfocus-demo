@@ -35,7 +35,7 @@ jobs:
       # Pulumi 3.270.0 removed the pulumi-analyzer-policy-<runtime> fallback that analyzer mode relies on
       # (rshade/finfocus#1895). Remove this pin when finfocus ships a pulumi-language-finfocus plugin.
       - name: Install Pulumi CLI
-        uses: pulumi/actions@v6
+        uses: pulumi/actions@v7
         with:
           pulumi-version: 3.268.0
 
@@ -69,7 +69,7 @@ jobs:
           install-plugins: aws-public
 
       - name: Run Pulumi Preview with Cost Analysis
-        uses: pulumi/actions@v6
+        uses: pulumi/actions@v7
         with:
           command: preview
           stack-name: dev

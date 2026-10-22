@@ -40,7 +40,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Install Pulumi CLI
-        uses: pulumi/actions@v6
+        uses: pulumi/actions@v7
         with:
           pulumi-version: latest
 
