@@ -57,24 +57,10 @@ Each workflow runs:
 
 Each run has two jobs:
 
-- **`release`** uses the pinned release (`@v2.0.0` and `@v2`). This is what
+- **`release`** uses the pinned release (`@v2.1.0`). This is what
   users get, and it owns the PR comment
 - **`action-main`** uses `rshade/finfocus-action@main` as an early warning for
   unreleased changes. It is allowed to fail without failing the run
-
-### Known Issues in finfocus-action v2.0.0
-
-These show up in the PR #1 comment:
-
-- The budget section is informational. Exceeding the budget does not fail the
-  job ([finfocus-action#109](https://github.com/rshade/finfocus-action/issues/109),
-  [#110](https://github.com/rshade/finfocus-action/issues/110))
-- Sustainability totals are 1000x too high
-  ([finfocus-action#111](https://github.com/rshade/finfocus-action/issues/111))
-- The what-if estimate prices a standalone `t3.large` with a $0.00 baseline;
-  it does not compare against the plan
-  ([finfocus-action#112](https://github.com/rshade/finfocus-action/issues/112)).
-  The recommendations section shows the real `t2` to `t3` savings
 
 ## Run It in Your Own Repository
 
