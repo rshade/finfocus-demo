@@ -1,0 +1,13 @@
+# finfocus demo project config
+#
+# This config is used when running with FINFOCUS_HOME pointing to
+# ~/.finfocus/demo (set by scripts/run-analyzer-preview.sh).
+#
+# Only the aws-public plugin is enabled for the demo. The recorder plugin
+# is intentionally excluded: it matches all providers ("*") and produces
+# GetRecommendations warnings that clutter demo output.
+
+installed_plugins:
+    - name: aws-public
+      url: github.com/rshade/finfocus-plugin-aws-public
+      version: v0.1.5
